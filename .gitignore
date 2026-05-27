@@ -1,39 +1,41 @@
+# --- MAVEN (Compilación y dependencias) ---
 target/
-!.mvn/wrapper/maven-wrapper.jar
-!**/src/main/**/target/
-!**/src/test/**/target/
-.kotlin
+pom.xml.tag
+pom.xml.releaseBackup
+pom.xml.next
+pom.xml.versionsBackup
+release.properties
+dependency-reduced-pom.xml
+build.log
 
-### IntelliJ IDEA ###
-.idea/modules.xml
-.idea/jarRepositories.xml
-.idea/compiler.xml
-.idea/libraries/
+# --- ARCHIVOS DE PERSISTENCIA LOCAL (Bases de datos binarias) ---
+# Ignoramos el archivo de datos para que tus pruebas locales no se suban al repo de Git
+*.dat
+*.bin
+
+# --- INTELIJ IDEA ---
+.idea/
 *.iws
 *.iml
 *.ipr
+out/
 
-### Eclipse ###
-.apt_generated
-.classpath
-.factorypath
-.project
-.settings
-.springBeans
-.sts4-cache
-
-### NetBeans ###
-/nbproject/private/
+# --- NETBEANS ---
+nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
 build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
-### VS Code ###
-.vscode/
+# --- ECLIPSE ---
+.metadata
+.classpath
+.project
+.settings/
+*.launch
 
-### Mac OS ###
+# --- SISTEMA OPERATIVO Y LOGS ---
+*.log
 .DS_Store
+Thumbs.db
