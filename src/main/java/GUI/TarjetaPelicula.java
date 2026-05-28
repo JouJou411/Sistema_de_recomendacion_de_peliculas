@@ -1,95 +1,103 @@
 package GUI;
 
 import javax.swing.*;
+import javax.swing.border.*;
 import java.awt.*;
 import java.io.File;
 
-public class TarjetaPelicula extends JPanel {
-    public TarjetaPelicula(String titulo, String calificacion, String coincidencia, String rutaImagen) {
-        setLayout(new BorderLayout(5, 5));
-        setBackground(new Color(30, 30, 45)); // Fondo oscuro de la tarjeta
-        setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+import static GUI.VentanaPrincipal.*;
 
-        // 1. Contenedor del Póster (JLabel con imagen escalada)
+/**
+ * TarjetaPelicula — Tarjeta visual de película para el grid de recomendaciones.
+ * Muestra póster, título, calificación promedio y porcentaje de compatibilidad BFS.
+ */
+public class TarjetaPelicula extends JPanel {
+
+    public TarjetaPelicula(String titulo, String calificacion, String coincidencia, String rutaImagen) {
+        setLayout(new BorderLayout(0, 0));
+        setOpaque(false);
+
+        // ── Contenedor con esquinas redondeadas ──
+        RoundedPanel card = new RoundedPanel(14, BG_CARD);
+        card.setLayout(new BorderLayout(0, 0));
+        setLayout(new BorderLayout());
+        add(card, BorderLayout.CENTER);
+
+        // ── Badge de match (esquina superior derecha del póster) ──
+        JLayeredPane layered = new JLayeredPane();
+        layered.setPreferredSize(new Dimension(160, 230));
+
+        // Póster
         JLabel lblPoster = new JLabel();
         lblPoster.setHorizontalAlignment(JLabel.CENTER);
-
-        // Dimensiones estándar para las tarjetas del panel central
-        int ancho = 160;
-        int alto = 230;
-        lblPoster.setPreferredSize(new Dimension(ancho, alto));
+        lblPoster.setBounds(0, 0, 160, 230);
 
         File file = new File(rutaImagen);
         if (file.exists()) {
-            ImageIcon iconoOriginal = new ImageIcon(rutaImagen);
-            Image imgEscalada = iconoOriginal.getImage().getScaledInstance(ancho, alto, Image.SCALE_SMOOTH);
-            lblPoster.setIcon(new ImageIcon(imgEscalada));
+            ImageIcon icon = new ImageIcon(rutaImagen);
+            Image scaled  = icon.getImage().getScaledInstance(160, 230, Image.SCALE_SMOOTH);
+            lblPoster.setIcon(new ImageIcon(scaled));
         } else {
-            // Fondo de respaldo si no encuentra la imagen física en assets/imgMovies/
             lblPoster.setOpaque(true);
-            lblPoster.setBackground(new Color(45, 45, 65));
-            lblPoster.setText("<html><center>Sin Póster<br>" + titulo + "</center></html>");
-            lblPoster.setForeground(Color.LIGHT_GRAY);
+            lblPoster.setBackground(new Color(30, 30, 46));
+            lblPoster.setText("<html><center><span style='color:#6b6b7a;font-size:11px'>Sin póster<br>" + titulo + "</span></center></html>");
         }
-        add(lblPoster, BorderLayout.CENTER);
+        layered.add(lblPoster, Integer.valueOf(0));
 
-        // 2. Panel de Información Inferior (Metadatos de la película)
-        JPanel infoPanel = new JPanel();
-        infoPanel.setLayout(new BoxLayout(infoPanel, BoxLayout.Y_AXIS));
-        infoPanel.setOpaque(false);
+        // Badge match
+        JLabel badge = new JLabel(coincidencia + " match");
+        badge.setFont(new Font("SansSerif", Font.BOLD, 10));
+        badge.setForeground(new Color(10, 30, 28));
+        badge.setBackground(CYAN);
+        badge.setOpaque(true);
+        badge.setBorder(new EmptyBorder(3, 7, 3, 7));
+        badge.setBounds(8, 10, 80, 22);
+        layered.add(badge, Integer.valueOf(1));
+
+        card.add(layered, BorderLayout.CENTER);
+
+        // ── Info inferior ──
+        JPanel info = new JPanel();
+        info.setLayout(new BoxLayout(info, BoxLayout.Y_AXIS));
+        info.setOpaque(false);
+        info.setBorder(new EmptyBorder(10, 12, 12, 12));
 
         JLabel lblTitulo = new JLabel(titulo);
-        lblTitulo.setFont(new Font("SansSerif", Font.BOLD, 14));
-        lblTitulo.setForeground(Color.WHITE);
+        lblTitulo.setFont(new Font("SansSerif", Font.BOLD, 13));
+        lblTitulo.setForeground(TEXT_PRI);
         lblTitulo.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JLabel lblRatingTxt = new JLabel("Average Rating");
-        lblRatingTxt.setFont(new Font("SansSerif", Font.PLAIN, 11));
-        lblRatingTxt.setForeground(Color.GRAY);
-        lblRatingTxt.setAlignmentX(Component.LEFT_ALIGNMENT);
+        JLabel lblRatingTag = new JLabel("Calificación promedio");
+        lblRatingTag.setFont(new Font("SansSerif", Font.PLAIN, 10));
+        lblRatingTag.setForeground(TEXT_MUT);
+        lblRatingTag.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Renderizado del puntaje (ej: 4.8/5 ⭐)
-        JLabel lblRatingVal = new JLabel(calificacion + "/5 ⭐");
-        lblRatingVal.setFont(new Font("SansSerif", Font.BOLD, 12));
-        lblRatingVal.setForeground(new Color(235, 170, 50));
-        lblRatingVal.setAlignmentX(Component.LEFT_ALIGNMENT);
+        JLabel lblRating = new JLabel(calificacion + " / 5  ⭐");
+        lblRating.setFont(new Font("SansSerif", Font.BOLD, 12));
+        lblRating.setForeground(ACCENT);
+        lblRating.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        JLabel lblMatchTxt = new JLabel("Compatibility Score");
-        lblMatchTxt.setFont(new Font("SansSerif", Font.PLAIN, 11));
-        lblMatchTxt.setForeground(Color.GRAY);
-        lblMatchTxt.setAlignmentX(Component.LEFT_ALIGNMENT);
+        JLabel lblCompatTag = new JLabel("Compatibilidad BFS");
+        lblCompatTag.setFont(new Font("SansSerif", Font.PLAIN, 10));
+        lblCompatTag.setForeground(TEXT_MUT);
+        lblCompatTag.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        // Renderizado del porcentaje de coincidencia obtenido por el BFS
-        JLabel lblMatchVal = new JLabel(coincidencia + " Match");
-        lblMatchVal.setFont(new Font("SansSerif", Font.BOLD, 12));
-        lblMatchVal.setForeground(new Color(40, 200, 150));
-        lblMatchVal.setAlignmentX(Component.LEFT_ALIGNMENT);
+        JLabel lblCompat = new JLabel(coincidencia);
+        lblCompat.setFont(new Font("SansSerif", Font.BOLD, 12));
+        lblCompat.setForeground(CYAN);
+        lblCompat.setAlignmentX(Component.LEFT_ALIGNMENT);
 
-        infoPanel.add(Box.createVerticalStrut(5));
-        infoPanel.add(lblTitulo);
-        infoPanel.add(Box.createVerticalStrut(4));
-        infoPanel.add(lblRatingTxt);
-        infoPanel.add(lblRatingVal);
-        infoPanel.add(Box.createVerticalStrut(4));
-        infoPanel.add(lblMatchTxt);
-        infoPanel.add(lblMatchVal);
+        info.add(lblTitulo);
+        info.add(Box.createVerticalStrut(6));
+        info.add(lblRatingTag);
+        info.add(lblRating);
+        info.add(Box.createVerticalStrut(4));
+        info.add(lblCompatTag);
+        info.add(lblCompat);
 
-        add(infoPanel, BorderLayout.SOUTH);
-    }
-
-    // Sobrescribimos el dibujo del componente para darle los bordes redondeados de la imagen
-    @Override
-    protected void paintComponent(Graphics g) {
-        Graphics2D g2 = (Graphics2D) g.create();
-        g2.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-        g2.setColor(getBackground());
-        g2.fillRoundRect(0, 0, getWidth(), getHeight(), 15, 15);
-        g2.dispose();
-        super.paintComponent(g);
+        card.add(info, BorderLayout.SOUTH);
     }
 
     @Override
-    public boolean isOpaque() {
-        return false;
-    }
+    public boolean isOpaque() { return false; }
 }

@@ -16,7 +16,7 @@ public class GestorImagenes {
      */
     public static String guardarImagenPelicula(File archivoOrigen, String cvePelicula) throws IOException {
         // 1. Definir la ruta de la carpeta del proyecto
-        File directorioDestino = new File("assets/imgMovies");
+        File directorioDestino = new File("resources/imgMovies");
 
         // 2. Si la carpeta no existe, la crea automáticamente (junto con carpetas padre si aplica)
         String nombreNuevoArchivo = getNombreNuevoArchivo(archivoOrigen, cvePelicula, directorioDestino);
@@ -26,7 +26,7 @@ public class GestorImagenes {
         Files.copy(archivoOrigen.toPath(), archivoDestino.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
         // 6. Retornar la ruta relativa exacta para guardarla en la instancia de GUI.Pelicula
-        return "assets/imgMovies/" + nombreNuevoArchivo;
+        return "resources/imgMovies/" + nombreNuevoArchivo;
     }
 
     private static String getNombreNuevoArchivo(File archivoOrigen, String cvePelicula, File directorioDestino) {
@@ -36,7 +36,7 @@ public class GestorImagenes {
 
         // 3. Extraer la extensión original del archivo (jpg, png, etc.)
         String nombreOriginal = archivoOrigen.getName();
-        String extension = "";
+        String extension;
         int i = nombreOriginal.lastIndexOf('.');
         if (i > 0) {
             extension = nombreOriginal.substring(i); // Retorna algo como ".jpg" o ".png"
