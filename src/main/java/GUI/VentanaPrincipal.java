@@ -4,11 +4,10 @@ import com.formdev.flatlaf.FlatDarkLaf;
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
-import java.util.List;
+import java.awt.event.*;
 
 /**
- * VentanaPrincipal — Contenedor raíz con sidebar de navegación y CardLayout.
- * Orquesta la navegación entre: MotorRecomendacion, Usuarios, Películas.
+ * VentanaPrincipal — Contenedor raiz con sidebar de navegacion y CardLayout
  */
 public class VentanaPrincipal extends JFrame {
 
@@ -16,7 +15,7 @@ public class VentanaPrincipal extends JFrame {
     static final Color BG_DEEP    = new Color(10,  10,  15);
     static final Color BG_PANEL   = new Color(17,  17,  26);
     static final Color BG_CARD    = new Color(24,  24,  36);
-    static final Color ACCENT     = new Color(232, 197, 104); // dorado
+    static final Color ACCENT     = new Color(232, 197, 104);
     static final Color CYAN       = new Color( 78, 205, 196);
     static final Color TEXT_PRI   = new Color(240, 237, 228);
     static final Color TEXT_MUT   = new Color(107, 107, 122);
@@ -33,31 +32,41 @@ public class VentanaPrincipal extends JFrame {
     private final SistemaRecomendacion sistema;
 
     // ── Navegación ───────────────────────────────────────────────────────────
-    private final CardLayout cardLayout = new CardLayout();
-    private final JPanel     panelCentral = new JPanel(cardLayout);
+    private final CardLayout cardLayout    = new CardLayout();
+    private final JPanel     panelCentral  = new JPanel(cardLayout);
     private JButton[]        navBtns;
 
     // ── Pantallas ────────────────────────────────────────────────────────────
-    private PantallaMotor    pantallaMotor;
-    private PantallaUsuarios pantallaUsuarios;
+    private PantallaMotor     pantallaMotor;
+    private PantallaUsuarios  pantallaUsuarios;
     private PantallaPeliculas pantallaPeliculas;
 
+    // ── Constructor ──────────────────────────────────────────────────────────
     public VentanaPrincipal(SistemaRecomendacion sistema) {
         this.sistema = sistema;
 
-        // --- Ventana base ---
         setTitle("CineMatch — Sistema de Recomendación Cinematográfica");
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE); // Controlamos el cierre nosotros
         setSize(1280, 760);
         setMinimumSize(new Dimension(960, 620));
         setLocationRelativeTo(null);
         getContentPane().setBackground(BG_DEEP);
         setLayout(new BorderLayout());
 
-        // --- Construir pantallas ---
-        pantallaMotor      = new PantallaMotor(sistema);
-        pantallaUsuarios   = new PantallaUsuarios(sistema, this);
-        pantallaPeliculas  = new PantallaPeliculas(sistema, this);
+        // ── Auto-guardar al cerrar ────────────────────────────────────────
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                sistema.guardarEstadoAuto();
+                System.out.println("[CineMatch] Aplicación cerrada correctamente.");
+                System.exit(0);
+            }
+        });
+
+        // ── Pantallas ─────────────────────────────────────────────────────
+        pantallaMotor     = new PantallaMotor(sistema);
+        pantallaUsuarios  = new PantallaUsuarios(sistema, this);
+        pantallaPeliculas = new PantallaPeliculas(sistema, this);
 
         panelCentral.setBackground(BG_DEEP);
         panelCentral.add(pantallaMotor,     "motor");
@@ -89,14 +98,13 @@ public class VentanaPrincipal extends JFrame {
         logoPanel.setAlignmentX(Component.LEFT_ALIGNMENT);
         sidebar.add(logoPanel);
 
-        // Sección label
+        // Navegación principal
         sidebar.add(sectionLabel("Navegación"));
 
-        // Botones de nav
         String[][] items = {
-            {"motor",     "⚡ Motor BFS"},
-            {"usuarios",  "👥 Usuarios"},
-            {"peliculas", "🎬 Películas"},
+            {"motor",     "⚡  Motor BFS"},
+            {"usuarios",  "👥  Usuarios"},
+            {"peliculas", "🎬  Películas"},
         };
         navBtns = new JButton[items.length];
         for (int i = 0; i < items.length; i++) {
@@ -108,30 +116,49 @@ public class VentanaPrincipal extends JFrame {
             sidebar.add(Box.createVerticalStrut(2));
         }
 
+        // Sección persistencia (solo exportar manualmente)
         sidebar.add(Box.createVerticalStrut(20));
-        sidebar.add(sectionLabel("Sistema"));
+        sidebar.add(sectionLabel("Datos"));
 
-        // Botón guardar/cargar
-        JButton btnGuardar = buildNavBtn("💾 Guardar estado", false);
-        btnGuardar.addActionListener(e -> guardarEstado());
-        sidebar.add(wrapNav(btnGuardar));
+        JButton btnExportar = buildNavBtn("💾  Exportar copia", false);
+        btnExportar.addActionListener(e -> exportarCopia());
+        sidebar.add(wrapNav(btnExportar));
         sidebar.add(Box.createVerticalStrut(2));
 
-        JButton btnCargar = buildNavBtn("📂 Cargar estado", false);
-        btnCargar.addActionListener(e -> cargarEstado());
-        sidebar.add(wrapNav(btnCargar));
+        JButton btnImportar = buildNavBtn("📂  Importar copia", false);
+        btnImportar.addActionListener(e -> importarCopia());
+        sidebar.add(wrapNav(btnImportar));
 
         sidebar.add(Box.createVerticalGlue());
 
-        // Footer version
-        JLabel ver = new JLabel("v2.0 — BFS Engine");
+        // Indicador de auto-guardado
+        JPanel autoSaveIndicator = getAutoSaveIndicator();
+        sidebar.add(autoSaveIndicator);
+
+        JLabel ver = new JLabel("v2.1 — BFS Engine");
         ver.setFont(FONT_SMALL);
         ver.setForeground(TEXT_MUT);
         ver.setAlignmentX(Component.LEFT_ALIGNMENT);
-        ver.setBorder(new EmptyBorder(12, 18, 18, 18));
+        ver.setBorder(new EmptyBorder(4, 18, 18, 18));
         sidebar.add(ver);
 
         return sidebar;
+    }
+
+    private static JPanel getAutoSaveIndicator() {
+        JPanel autoSaveIndicator = new JPanel(new FlowLayout(FlowLayout.LEFT, 6, 0));
+        autoSaveIndicator.setOpaque(false);
+        autoSaveIndicator.setBorder(new EmptyBorder(0, 14, 4, 14));
+        autoSaveIndicator.setAlignmentX(Component.LEFT_ALIGNMENT);
+        JLabel dotVerde = new JLabel("●");
+        dotVerde.setFont(new Font("SansSerif", Font.PLAIN, 9));
+        dotVerde.setForeground(new Color(78, 205, 100));
+        JLabel autoLbl = new JLabel("Auto-guardado activo");
+        autoLbl.setFont(new Font("SansSerif", Font.PLAIN, 9));
+        autoLbl.setForeground(TEXT_MUT);
+        autoSaveIndicator.add(dotVerde);
+        autoSaveIndicator.add(autoLbl);
+        return autoSaveIndicator;
     }
 
     private JButton buildNavBtn(String text, boolean active) {
@@ -184,11 +211,9 @@ public class VentanaPrincipal extends JFrame {
         cardLayout.show(panelCentral, key);
 
         String[] keys = {"motor", "usuarios", "peliculas"};
-        for (int i = 0; i < navBtns.length; i++) {
+        for (int i = 0; i < navBtns.length; i++)
             styleNavBtn(navBtns[i], keys[i].equals(key));
-        }
 
-        // Refrescar datos al entrar a cada pantalla
         switch (key) {
             case "motor"     -> pantallaMotor.refrescar();
             case "usuarios"  -> pantallaUsuarios.refrescar();
@@ -196,41 +221,40 @@ public class VentanaPrincipal extends JFrame {
         }
     }
 
-    // ── Persistencia ──────────────────────────────────────────────────────────
-    private void guardarEstado() {
+    // ── Exportar / Importar manual (copia de seguridad) ───────────────────────
+    private void exportarCopia() {
         JFileChooser fc = new JFileChooser();
-        fc.setDialogTitle("Guardar estado del sistema");
+        fc.setDialogTitle("Exportar copia de seguridad");
+        fc.setSelectedFile(new java.io.File("cinematch_backup.dat"));
         if (fc.showSaveDialog(this) == JFileChooser.APPROVE_OPTION) {
             try {
                 String path = fc.getSelectedFile().getAbsolutePath();
                 if (!path.endsWith(".dat")) path += ".dat";
                 sistema.guardarEstado(path);
-                mostrarInfo("Estado guardado en:\n" + path);
+                mostrarInfo("Copia exportada en:\n" + path);
             } catch (Exception ex) {
-                mostrarError("Error al guardar: " + ex.getMessage());
+                mostrarError("Error al exportar: " + ex.getMessage());
             }
         }
     }
 
-    private void cargarEstado() {
+    private void importarCopia() {
         JFileChooser fc = new JFileChooser();
-        fc.setDialogTitle("Cargar estado del sistema");
+        fc.setDialogTitle("Importar copia de seguridad");
         if (fc.showOpenDialog(this) == JFileChooser.APPROVE_OPTION) {
             try {
-                // Carga y reconstruye la ventana
                 SistemaRecomendacion s2 = SistemaRecomendacion.cargarEstado(
                     fc.getSelectedFile().getAbsolutePath());
-                JOptionPane.showMessageDialog(this, "Estado cargado correctamente.", "Éxito",
-                    JOptionPane.INFORMATION_MESSAGE);
-                // Reemplazar la ventana
+                mostrarInfo("Copia importada correctamente.");
                 dispose();
                 SwingUtilities.invokeLater(() -> new VentanaPrincipal(s2).setVisible(true));
             } catch (Exception ex) {
-                mostrarError("Error al cargar: " + ex.getMessage());
+                mostrarError("Error al importar: " + ex.getMessage());
             }
         }
     }
 
+    // ── Helpers de diálogo ───────────────────────────────────────────────────
     static void mostrarError(String msg) {
         JOptionPane.showMessageDialog(null, msg, "Error", JOptionPane.ERROR_MESSAGE);
     }
@@ -244,44 +268,10 @@ public class VentanaPrincipal extends JFrame {
         try { UIManager.setLookAndFeel(new FlatDarkLaf()); }
         catch (Exception ignored) {}
 
-        SistemaRecomendacion s = new SistemaRecomendacion();
+        // Carga automática desde resources/archivos/cinematch.dat
+        // Si no existe el archivo, cargarOInicializar() devuelve datos de ejemplo.
+        SistemaRecomendacion sistema = SistemaRecomendacion.cargarOInicializar();
 
-        // Películas
-        s.registrarPelicula("The Matrix",       "Sci-Fi",   1999, "Wachowskis",    4.8, "assets/imgMovies/matrix.jpg");
-        s.registrarPelicula("The Godfather",    "Crime",    1972, "F. F. Coppola", 4.9, "assets/imgMovies/godfather.jpg");
-        s.registrarPelicula("Interstellar",     "Sci-Fi",   2014, "C. Nolan",      4.8, "assets/imgMovies/interstellar.jpg");
-        s.registrarPelicula("Parasite",         "Thriller", 2019, "Bong Joon-ho",  4.7, "assets/imgMovies/parasite.jpg");
-        Pelicula pInception = s.registrarPelicula("Inception",        "Sci-Fi",   2010, "C. Nolan",      4.7, "assets/imgMovies/inception.jpg");
-        Pelicula pDune      = s.registrarPelicula("Dune",             "Sci-Fi",   2021, "D. Villeneuve", 4.6, "assets/imgMovies/dune.jpg");
-        Pelicula pBlade     = s.registrarPelicula("Blade Runner 2049","Sci-Fi",   2017, "D. Villeneuve", 4.5, "assets/imgMovies/bladerunner.jpg");
-        s.registrarPelicula("The Dark Knight",  "Action",   2008, "C. Nolan",      4.9, "assets/imgMovies/darkknight.jpg");
-        s.registrarPelicula("Pulp Fiction",     "Crime",    1994, "Q. Tarantino",  4.7, "assets/imgMovies/pulpfiction.jpg");
-
-        // Usuarios
-        Usuario u1 = s.registrarUsuario("Marty Renna",  23, "México");
-        Usuario u2 = s.registrarUsuario("Luis Montoya", 28, "Colombia");
-        Usuario u3 = s.registrarUsuario("Ana Fuentes",  25, "Argentina");
-
-        // Aristas (favoritas compartidas)
-        List<Pelicula> pelis = s.getListaPeliculas();
-        u1.getPeliculasFavoritas().add(pelis.get(0)); // Matrix
-        u1.getPeliculasFavoritas().add(pelis.get(1)); // Godfather
-
-        u2.getPeliculasFavoritas().add(pelis.get(0));
-        u2.getPeliculasFavoritas().add(pelis.get(1));
-        u2.getPeliculasFavoritas().add(pelis.get(2)); // Interstellar
-        u2.getPeliculasFavoritas().add(pelis.get(7)); // Dark Knight
-
-        u3.getPeliculasFavoritas().add(pelis.get(0));
-        u3.getPeliculasFavoritas().add(pelis.get(1));
-        u3.getPeliculasFavoritas().add(pelis.get(3)); // Parasite
-        u3.getPeliculasFavoritas().add(pelis.get(8)); // Pulp Fiction
-
-        // Watchlist de Marty
-        u1.getWatchlist().add(pInception);
-        u1.getWatchlist().add(pDune);
-        u1.getWatchlist().add(pBlade);
-
-        SwingUtilities.invokeLater(() -> new VentanaPrincipal(s).setVisible(true));
+        SwingUtilities.invokeLater(() -> new VentanaPrincipal(sistema).setVisible(true));
     }
 }

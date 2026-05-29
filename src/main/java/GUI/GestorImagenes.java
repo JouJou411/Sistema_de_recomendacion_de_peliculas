@@ -9,20 +9,20 @@ public class GestorImagenes {
 
     /**
      * Copia la imagen seleccionada por el usuario a la carpeta local del proyecto.
-     * * @param archivoOrigen El archivo que el usuario seleccionó con el JFileChooser.
-     * @param cvePelicula La clave autogenerada de la película (ej. "P001").
-     * @return La ruta relativa que se guardará en el objeto GUI.Pelicula.
+     * * @param archivoOrigen El archivo que el usuario selecciono con el JFileChooser.
+     * @param cvePelicula La clave autogenerada de la pelicula (ej. "P001").
+     * @return La ruta relativa que se guardara en el objeto GUI.Pelicula.
      * @throws IOException Si ocurre un error al copiar el archivo.
      */
     public static String guardarImagenPelicula(File archivoOrigen, String cvePelicula) throws IOException {
         // 1. Definir la ruta de la carpeta del proyecto
         File directorioDestino = new File("resources/imgMovies");
 
-        // 2. Si la carpeta no existe, la crea automáticamente (junto con carpetas padre si aplica)
-        String nombreNuevoArchivo = getNombreNuevoArchivo(archivoOrigen, cvePelicula, directorioDestino);
+        // 2. Si la carpeta no existe, la crea automaticamente (junto con carpetas padre si aplica)
+        String nombreNuevoArchivo = getNombreNuevoArchivo(archivoOrigen, cvePelicula, directorioDestino); // Ver metodo getNombreNuevoArchivo para el paso 3 y 4
         File archivoDestino = new File(directorioDestino, nombreNuevoArchivo);
 
-        // 5. Copiar el archivo reemplazándolo si ya existía uno con el mismo nombre
+        // 5. Copiar el archivo reemplazandolo si ya existia uno con el mismo nombre
         Files.copy(archivoOrigen.toPath(), archivoDestino.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
         // 6. Retornar la ruta relativa exacta para guardarla en la instancia de GUI.Pelicula
@@ -34,7 +34,7 @@ public class GestorImagenes {
             directorioDestino.mkdirs();
         }
 
-        // 3. Extraer la extensión original del archivo (jpg, png, etc.)
+        // 3. Extraer la extension original del archivo (jpg, png, etc.)
         String nombreOriginal = archivoOrigen.getName();
         String extension;
         int i = nombreOriginal.lastIndexOf('.');

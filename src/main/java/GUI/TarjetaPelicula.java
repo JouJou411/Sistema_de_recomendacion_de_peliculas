@@ -8,7 +8,7 @@ import java.io.File;
 import static GUI.VentanaPrincipal.*;
 
 /**
- * TarjetaPelicula — Tarjeta visual de película para el grid de recomendaciones.
+ * TarjetaPelicula
  * Muestra póster, título, calificación promedio y porcentaje de compatibilidad BFS.
  */
 public class TarjetaPelicula extends JPanel {

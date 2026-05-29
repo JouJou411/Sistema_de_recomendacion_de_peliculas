@@ -3,18 +3,23 @@ package GUI;
 import javax.swing.*;
 import javax.swing.border.*;
 import javax.swing.table.*;
-import java.awt.*;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
+import java.awt.BorderLayout;
+import java.awt.Cursor;
+import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
 
 import static GUI.VentanaPrincipal.*;
 import static GUI.PantallaMotor.*;
 
-/**
- * PantallaUsuarios — CRUD completo de usuarios.
- * Muestra tabla de usuarios, panel de detalle con favoritas y watchlist,
- * y formulario modal para crear / editar usuarios.
- */
 public class PantallaUsuarios extends JPanel {
 
     private final SistemaRecomendacion sistema;
@@ -118,20 +123,23 @@ public class PantallaUsuarios extends JPanel {
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 8, 0));
         btnPanel.setOpaque(false);
 
-        JButton btnEditar  = buildSecondaryBtn("✏  Editar");
-        JButton btnEliminar = buildSecondaryBtn("🗑  Eliminar");
-        JButton btnAgrFav  = buildSecondaryBtn("★  Agregar favorita");
-        JButton btnProcWL  = buildSecondaryBtn("▶  Procesar watchlist");
+        JButton btnEditar    = buildSecondaryBtn("✏  Editar");
+        JButton btnEliminar  = buildSecondaryBtn("🗑  Eliminar");
+        JButton btnAgrFav    = buildSecondaryBtn("★  Agregar favorita");
+        JButton btnQuitarFav = buildSecondaryBtn("✕  Quitar favorita");
+        JButton btnProcWL    = buildSecondaryBtn("▶  Procesar watchlist");
 
         btnEditar.addActionListener(e -> editarUsuarioSeleccionado());
         btnEliminar.addActionListener(e -> eliminarUsuarioSeleccionado());
         btnAgrFav.addActionListener(e -> agregarFavorita());
+        btnQuitarFav.addActionListener(e -> quitarFavorita());
         btnProcWL.addActionListener(e -> procesarWatchlist());
 
         btnPanel.add(btnEditar);
         btnPanel.add(btnEliminar);
         btnPanel.add(new JSeparator(JSeparator.VERTICAL) {{ setPreferredSize(new Dimension(1, 24)); }});
         btnPanel.add(btnAgrFav);
+        btnPanel.add(btnQuitarFav);
         btnPanel.add(btnProcWL);
         p.add(btnPanel, BorderLayout.SOUTH);
 
@@ -225,7 +233,7 @@ public class PantallaUsuarios extends JPanel {
         List<String> histNames = new ArrayList<>();
         for (Pelicula p : u.getHistorialVistas())    histNames.add(p.getNombre());
 
-        llenarListaDetalle(panelDetFavs,  favNames,  "★", ACCENT);
+        llenarFavoritasConBoton();
         llenarListaDetalle(panelDetWL,    wlNames,   "⏳", CYAN);
         llenarListaDetalle(panelDetHist,  histNames, "✔", TEXT_MUT);
 
@@ -233,6 +241,9 @@ public class PantallaUsuarios extends JPanel {
         panelDetalle.repaint();
     }
 
+    /**
+     * Rellena un panel vertical con items de texto simple (watchlist, historial).
+     */
     private void llenarListaDetalle(JPanel panel, List<String> items, String icon, Color color) {
         panel.removeAll();
         if (items.isEmpty()) {
@@ -249,6 +260,59 @@ public class PantallaUsuarios extends JPanel {
         }
     }
 
+    /**
+     * Rellena el panel de favoritas con una fila por película:
+     * icono + nombre a la izquierda  y  botón [×] a la derecha para quitar.
+     */
+    private void llenarFavoritasConBoton() {
+        panelDetFavs.removeAll();
+        if (usuarioSeleccionado == null
+                || usuarioSeleccionado.getPeliculasFavoritas().isEmpty()) {
+            JLabel empty = makeLabel("(vacío)", FONT_SMALL, TEXT_MUT);
+            empty.setAlignmentX(Component.LEFT_ALIGNMENT);
+            panelDetFavs.add(empty);
+        } else {
+            // Iteramos sobre una copia para poder modificar la lista original
+            List<Pelicula> copia = new ArrayList<>(usuarioSeleccionado.getPeliculasFavoritas());
+            for (Pelicula p : copia) {
+                JPanel fila = new JPanel(new BorderLayout(4, 0));
+                fila.setOpaque(false);
+                fila.setMaximumSize(new Dimension(Integer.MAX_VALUE, 22));
+                fila.setAlignmentX(Component.LEFT_ALIGNMENT);
+
+                JLabel lbl = makeLabel("★  " + p.getNombre(), FONT_SMALL, ACCENT);
+                fila.add(lbl, BorderLayout.CENTER);
+
+                JButton btnX = new JButton("×");
+                btnX.setFont(new Font("SansSerif", Font.BOLD, 11));
+                btnX.setForeground(new Color(200, 80, 80));
+                btnX.setBackground(new Color(200, 80, 80, 22));
+                btnX.setBorder(BorderFactory.createEmptyBorder(1, 5, 1, 5));
+                btnX.setFocusable(false);
+                btnX.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+                btnX.setToolTipText("Quitar de favoritas");
+                btnX.addActionListener(e -> {
+                    int confirm = JOptionPane.showConfirmDialog(ventana,
+                            "¿Quitar '" + p.getNombre() + "' de las favoritas de "
+                                    + usuarioSeleccionado.getNombre() + "?",
+                            "Confirmar", JOptionPane.YES_NO_OPTION);
+                    if (confirm == JOptionPane.YES_OPTION) {
+                        usuarioSeleccionado.getPeliculasFavoritas().remove(p);
+                        llenarFavoritasConBoton();
+                        panelDetalle.revalidate();
+                        panelDetalle.repaint();
+                        refrescarTabla();
+                    }
+                });
+                fila.add(btnX, BorderLayout.EAST);
+                panelDetFavs.add(fila);
+                panelDetFavs.add(Box.createVerticalStrut(3));
+            }
+        }
+        panelDetFavs.revalidate();
+        panelDetFavs.repaint();
+    }
+
     private void editarUsuarioSeleccionado() {
         if (usuarioSeleccionado == null) { VentanaPrincipal.mostrarError("Selecciona un usuario primero."); return; }
         abrirFormulario(usuarioSeleccionado);
@@ -257,8 +321,8 @@ public class PantallaUsuarios extends JPanel {
     private void eliminarUsuarioSeleccionado() {
         if (usuarioSeleccionado == null) { VentanaPrincipal.mostrarError("Selecciona un usuario primero."); return; }
         int confirm = JOptionPane.showConfirmDialog(this,
-            "¿Eliminar al usuario " + usuarioSeleccionado.getNombre() + "?",
-            "Confirmar eliminación", JOptionPane.YES_NO_OPTION);
+                "¿Eliminar al usuario " + usuarioSeleccionado.getNombre() + "?",
+                "Confirmar eliminación", JOptionPane.YES_NO_OPTION);
         if (confirm == JOptionPane.YES_OPTION) {
             sistema.getListaUsuarios().remove(usuarioSeleccionado);
             usuarioSeleccionado = null;
@@ -267,23 +331,275 @@ public class PantallaUsuarios extends JPanel {
     }
 
     private void agregarFavorita() {
-        if (usuarioSeleccionado == null) { VentanaPrincipal.mostrarError("Selecciona un usuario primero."); return; }
-        List<Pelicula> pelis = sistema.getListaPeliculas();
-        if (pelis.isEmpty()) { VentanaPrincipal.mostrarError("No hay películas registradas."); return; }
+        if (usuarioSeleccionado == null) {
+            VentanaPrincipal.mostrarError("Selecciona un usuario primero."); return;
+        }
+        if (sistema.getListaPeliculas().isEmpty()) {
+            VentanaPrincipal.mostrarError("No hay películas registradas."); return;
+        }
+        abrirDialogoAgregarFavorita();
+    }
 
-        String[] opciones = pelis.stream().map(p -> p.getCve() + " — " + p.getNombre()).toArray(String[]::new);
-        String sel = (String) JOptionPane.showInputDialog(this,
-            "Selecciona una película para agregar a favoritas de " + usuarioSeleccionado.getNombre() + ":",
-            "Agregar favorita", JOptionPane.PLAIN_MESSAGE, null, opciones, opciones[0]);
-        if (sel == null) return;
+    /**
+     * Diálogo propio con tabla, búsqueda en tiempo real y doble clic.
+     * Muestra todas las películas y marca cuáles ya son favoritas del usuario.
+     */
+    private void abrirDialogoAgregarFavorita() {
+        JDialog dialog = new JDialog(ventana,
+                "Agregar favorita — " + usuarioSeleccionado.getNombre(), true);
+        dialog.setSize(560, 420);
+        dialog.setLocationRelativeTo(ventana);
+        dialog.getContentPane().setBackground(BG_PANEL);
+        dialog.setLayout(new BorderLayout(0, 0));
 
-        String cve = sel.split(" — ")[0];
-        Pelicula p = sistema.buscarPelicula(cve);
-        if (p != null && !usuarioSeleccionado.getPeliculasFavoritas().contains(p)) {
+        // Header
+        JPanel top = new JPanel(new BorderLayout(10, 0));
+        top.setBackground(BG_PANEL);
+        top.setBorder(new EmptyBorder(16, 20, 10, 20));
+        JLabel titulo = makeLabel(
+                "Selecciona pelicula para  ★  " + usuarioSeleccionado.getNombre(),
+                FONT_HEAD, TEXT_PRI);
+        top.add(titulo, BorderLayout.WEST);
+
+        // Campo busqueda
+        JTextField txtBuscar = new JTextField(14);
+        txtBuscar.setFont(FONT_BODY);
+        txtBuscar.setBackground(BG_CARD);
+        txtBuscar.setForeground(TEXT_PRI);
+        txtBuscar.setCaretColor(TEXT_PRI);
+        txtBuscar.setBorder(BorderFactory.createCompoundBorder(
+                BorderFactory.createLineBorder(BORDER_COL),
+                new EmptyBorder(5, 10, 5, 10)));
+        top.add(txtBuscar, BorderLayout.EAST);
+        dialog.add(top, BorderLayout.NORTH);
+
+        // Tabla
+        String[] cols = {"CVE", "Titulo", "Genero", "Anno", "Director", "Cal.", "Favorita"};
+        DefaultTableModel modeloDlg = new DefaultTableModel(cols, 0) {
+            public boolean isCellEditable(int r, int c) { return false; }
+            public Class<?> getColumnClass(int c) { return c == 6 ? Boolean.class : String.class; }
+        };
+        for (Pelicula p : sistema.getListaPeliculas()) {
+            boolean yaFav = usuarioSeleccionado.getPeliculasFavoritas().contains(p);
+            modeloDlg.addRow(new Object[]{
+                    p.getCve(), p.getNombre(), p.getGenero(),
+                    String.valueOf(p.getAnio()), p.getDirector(),
+                    String.format("%.1f", p.getCalificacionPromedio()), yaFav
+            });
+        }
+        JTable tablaDlg = getTablaDlg(modeloDlg, 232, 197, 104);
+
+        // Render columna Favorita
+        tablaDlg.getColumnModel().getColumn(6).setCellRenderer(new DefaultTableCellRenderer() {
+            public Component getTableCellRendererComponent(JTable t, Object val,
+                                                           boolean sel, boolean foc, int row, int col) {
+                boolean esFav = Boolean.TRUE.equals(val);
+                JLabel l = new JLabel(esFav ? "★  Si" : "—");
+                l.setFont(new Font("SansSerif", Font.BOLD, 11));
+                l.setForeground(esFav ? ACCENT : TEXT_MUT);
+                l.setHorizontalAlignment(SwingConstants.CENTER);
+                l.setOpaque(true);
+                l.setBackground(sel ? new Color(232,197,104,50) : BG_CARD);
+                l.setBorder(new EmptyBorder(0, 4, 0, 4));
+                return l;
+            }
+        });
+        int[] anchos = {50, 150, 75, 45, 115, 40, 80};
+        for (int i = 0; i < anchos.length; i++)
+            tablaDlg.getColumnModel().getColumn(i).setPreferredWidth(anchos[i]);
+
+        JTableHeader header = tablaDlg.getTableHeader();
+        header.setFont(new Font("SansSerif", Font.BOLD, 11));
+        header.setForeground(TEXT_MUT);
+        header.setBackground(BG_PANEL);
+
+        JScrollPane sp = new JScrollPane(tablaDlg);
+        sp.setBackground(BG_CARD);
+        sp.getViewport().setBackground(BG_CARD);
+        sp.setBorder(BorderFactory.createMatteBorder(1, 0, 1, 0, BORDER_COL));
+        dialog.add(sp, BorderLayout.CENTER);
+
+        // Filtro en tiempo real
+        TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>(modeloDlg);
+        tablaDlg.setRowSorter(sorter);
+        txtBuscar.getDocument().addDocumentListener(new javax.swing.event.DocumentListener() {
+            void filtrar() {
+                String txt = txtBuscar.getText().trim();
+                try { sorter.setRowFilter(txt.isEmpty() ? null : RowFilter.regexFilter("(?i)" + txt)); }
+                catch (Exception ignored) {}
+            }
+            public void insertUpdate(javax.swing.event.DocumentEvent e)  { filtrar(); }
+            public void removeUpdate(javax.swing.event.DocumentEvent e)  { filtrar(); }
+            public void changedUpdate(javax.swing.event.DocumentEvent e) { filtrar(); }
+        });
+
+        // Pie
+        JPanel footer = new JPanel(new BorderLayout(10, 0));
+        footer.setBackground(BG_PANEL);
+        footer.setBorder(new EmptyBorder(10, 20, 14, 20));
+        JLabel hint = makeLabel("Doble clic o boton Agregar para confirmar", FONT_SMALL, TEXT_MUT);
+        footer.add(hint, BorderLayout.WEST);
+
+        JPanel btnRow = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        btnRow.setOpaque(false);
+        JButton btnCancelar = buildSecondaryBtn("Cancelar");
+        JButton btnAgregar  = buildAccentBtn("★  Agregar favorita");
+        btnCancelar.addActionListener(e -> dialog.dispose());
+
+        Runnable accionAgregar = () -> {
+            int viewRow = tablaDlg.getSelectedRow();
+            if (viewRow < 0) { VentanaPrincipal.mostrarError("Selecciona una pelicula primero."); return; }
+            int modelRow = tablaDlg.convertRowIndexToModel(viewRow);
+            String cve = (String) modeloDlg.getValueAt(modelRow, 0);
+            Pelicula p = sistema.buscarPelicula(cve);
+            if (p == null) return;
+            if (usuarioSeleccionado.getPeliculasFavoritas().contains(p)) {
+                VentanaPrincipal.mostrarInfo("'" + p.getNombre() + "' ya es favorita.");
+                return;
+            }
             usuarioSeleccionado.getPeliculasFavoritas().add(p);
+            modeloDlg.setValueAt(Boolean.TRUE, modelRow, 6);
             actualizarDetalle();
             refrescarTabla();
+            VentanaPrincipal.mostrarInfo("'" + p.getNombre() + "' agregada a favoritas  ★");
+        };
+
+        btnAgregar.addActionListener(e -> accionAgregar.run());
+        tablaDlg.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) accionAgregar.run();
+            }
+        });
+
+        btnRow.add(btnCancelar);
+        btnRow.add(btnAgregar);
+        footer.add(btnRow, BorderLayout.EAST);
+        dialog.add(footer, BorderLayout.SOUTH);
+        dialog.setVisible(true);
+    }
+
+    /**
+     * Abre un diálogo con las películas favoritas actuales del usuario
+     * para seleccionar cuál quitar. Alternativa al botón × del panel lateral.
+     */
+    private void quitarFavorita() {
+        if (usuarioSeleccionado == null) {
+            VentanaPrincipal.mostrarError("Selecciona un usuario primero."); return;
         }
+        if (usuarioSeleccionado.getPeliculasFavoritas().isEmpty()) {
+            VentanaPrincipal.mostrarInfo("Este usuario no tiene favoritas."); return;
+        }
+
+        JDialog dialog = new JDialog(ventana,
+                "Quitar favorita — " + usuarioSeleccionado.getNombre(), true);
+        dialog.setSize(480, 340);
+        dialog.setLocationRelativeTo(ventana);
+        dialog.getContentPane().setBackground(BG_PANEL);
+        dialog.setLayout(new BorderLayout(0, 0));
+
+        // Header
+        JPanel top = new JPanel(new BorderLayout());
+        top.setBackground(BG_PANEL);
+        top.setBorder(new EmptyBorder(16, 20, 10, 20));
+        top.add(makeLabel("Selecciona la favorita a quitar  ✕", FONT_HEAD, TEXT_PRI),
+                BorderLayout.WEST);
+        dialog.add(top, BorderLayout.NORTH);
+
+        // Tabla con favoritas actuales
+        String[] cols = {"CVE", "Título", "Género", "Año", "Director", "Cal."};
+        DefaultTableModel modeloDlg = new DefaultTableModel(cols, 0) {
+            public boolean isCellEditable(int r, int c) { return false; }
+        };
+        for (Pelicula p : usuarioSeleccionado.getPeliculasFavoritas()) {
+            modeloDlg.addRow(new Object[]{
+                    p.getCve(), p.getNombre(), p.getGenero(),
+                    String.valueOf(p.getAnio()), p.getDirector(),
+                    String.format("%.1f", p.getCalificacionPromedio())
+            });
+        }
+        JTable tablaDlg = getTablaDlg(modeloDlg, 200, 80, 80);
+
+        JTableHeader header = tablaDlg.getTableHeader();
+        header.setFont(new Font("SansSerif", Font.BOLD, 11));
+        header.setForeground(TEXT_MUT);
+        header.setBackground(BG_PANEL);
+        int[] anchos = {50, 160, 75, 45, 120, 40};
+        for (int i = 0; i < anchos.length; i++)
+            tablaDlg.getColumnModel().getColumn(i).setPreferredWidth(anchos[i]);
+
+        JScrollPane sp = new JScrollPane(tablaDlg);
+        sp.setBackground(BG_CARD);
+        sp.getViewport().setBackground(BG_CARD);
+        sp.setBorder(BorderFactory.createMatteBorder(1, 0, 1, 0, BORDER_COL));
+        dialog.add(sp, BorderLayout.CENTER);
+
+        // Pie
+        JPanel footer = new JPanel(new BorderLayout(10, 0));
+        footer.setBackground(BG_PANEL);
+        footer.setBorder(new EmptyBorder(10, 20, 14, 20));
+        footer.add(makeLabel("Doble clic o botón Quitar para confirmar", FONT_SMALL, TEXT_MUT),
+                BorderLayout.WEST);
+
+        JPanel btnRow = new JPanel(new FlowLayout(FlowLayout.RIGHT, 8, 0));
+        btnRow.setOpaque(false);
+        JButton btnCancelar = buildSecondaryBtn("Cancelar");
+        JButton btnQuitar   = new JButton("✕  Quitar favorita");
+        btnQuitar.setFont(new Font("SansSerif", Font.BOLD, 13));
+        btnQuitar.setBackground(new Color(180, 50, 50));
+        btnQuitar.setForeground(Color.WHITE);
+        btnQuitar.setBorderPainted(false);
+        btnQuitar.setFocusable(false);
+        btnQuitar.setBorder(new EmptyBorder(8, 18, 8, 18));
+        btnCancelar.addActionListener(e -> dialog.dispose());
+
+        Runnable accionQuitar = () -> {
+            int viewRow = tablaDlg.getSelectedRow();
+            if (viewRow < 0) { VentanaPrincipal.mostrarError("Selecciona una película primero."); return; }
+            int modelRow = tablaDlg.convertRowIndexToModel(viewRow);
+            String cve = (String) modeloDlg.getValueAt(modelRow, 0);
+            Pelicula p = sistema.buscarPelicula(cve);
+            if (p == null) return;
+            int confirm = JOptionPane.showConfirmDialog(dialog,
+                    "¿Quitar '" + p.getNombre() + "' de las favoritas de "
+                            + usuarioSeleccionado.getNombre() + "?",
+                    "Confirmar", JOptionPane.YES_NO_OPTION);
+            if (confirm != JOptionPane.YES_OPTION) return;
+            usuarioSeleccionado.getPeliculasFavoritas().remove(p);
+            modeloDlg.removeRow(modelRow);
+            llenarFavoritasConBoton();
+            panelDetalle.revalidate();
+            panelDetalle.repaint();
+            refrescarTabla();
+            if (usuarioSeleccionado.getPeliculasFavoritas().isEmpty()) dialog.dispose();
+        };
+
+        btnQuitar.addActionListener(e -> accionQuitar.run());
+        tablaDlg.addMouseListener(new MouseAdapter() {
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2) accionQuitar.run();
+            }
+        });
+
+        btnRow.add(btnCancelar);
+        btnRow.add(btnQuitar);
+        footer.add(btnRow, BorderLayout.EAST);
+        dialog.add(footer, BorderLayout.SOUTH);
+        dialog.setVisible(true);
+    }
+
+    private static JTable getTablaDlg(DefaultTableModel modeloDlg, int r, int g, int g1) {
+        JTable tablaDlg = new JTable(modeloDlg);
+        tablaDlg.setFont(FONT_BODY);
+        tablaDlg.setForeground(TEXT_PRI);
+        tablaDlg.setBackground(BG_CARD);
+        tablaDlg.setGridColor(BORDER_COL);
+        tablaDlg.setRowHeight(32);
+        tablaDlg.setSelectionBackground(new Color(r, g, g1, 50));
+        tablaDlg.setSelectionForeground(TEXT_PRI);
+        tablaDlg.setShowVerticalLines(false);
+        tablaDlg.setFillsViewportHeight(true);
+        tablaDlg.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        return tablaDlg;
     }
 
     private void procesarWatchlist() {
@@ -316,9 +632,9 @@ public class PantallaUsuarios extends JPanel {
         JTextField txtPais   = buildField(esNuevo ? "" : usuarioEditar.getPais());
 
         Object[][] campos = {
-            {"Nombre:", txtNombre},
-            {"Edad:",   txtEdad},
-            {"País:",   txtPais}
+                {"Nombre:", txtNombre},
+                {"Edad:",   txtEdad},
+                {"País:",   txtPais}
         };
         for (int i = 0; i < campos.length; i++) {
             gbc.gridx = 0; gbc.gridy = i;
@@ -369,12 +685,12 @@ public class PantallaUsuarios extends JPanel {
         modeloTabla.setRowCount(0);
         for (Usuario u : sistema.getListaUsuarios()) {
             modeloTabla.addRow(new Object[]{
-                u.getCve(),
-                u.getNombre(),
-                u.getEdad(),
-                u.getPais(),
-                u.getPeliculasFavoritas().size(),
-                u.getWatchlist().size()
+                    u.getCve(),
+                    u.getNombre(),
+                    u.getEdad(),
+                    u.getPais(),
+                    u.getPeliculasFavoritas().size(),
+                    u.getWatchlist().size()
             });
         }
     }
@@ -387,8 +703,8 @@ public class PantallaUsuarios extends JPanel {
         f.setForeground(TEXT_PRI);
         f.setCaretColor(TEXT_PRI);
         f.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(BORDER_COL),
-            new EmptyBorder(6, 10, 6, 10)
+                BorderFactory.createLineBorder(BORDER_COL),
+                new EmptyBorder(6, 10, 6, 10)
         ));
         return f;
     }
@@ -411,8 +727,8 @@ public class PantallaUsuarios extends JPanel {
         btn.setBackground(BG_CARD);
         btn.setForeground(TEXT_PRI);
         btn.setBorder(BorderFactory.createCompoundBorder(
-            BorderFactory.createLineBorder(BORDER_COL),
-            new EmptyBorder(6, 14, 6, 14)
+                BorderFactory.createLineBorder(BORDER_COL),
+                new EmptyBorder(6, 14, 6, 14)
         ));
         btn.setFocusable(false);
         btn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
