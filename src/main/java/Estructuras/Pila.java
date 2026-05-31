@@ -1,4 +1,4 @@
-package GUI;
+package Estructuras;
 
 import java.io.Serializable;
 import java.util.Iterator;

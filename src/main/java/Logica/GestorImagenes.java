@@ -1,4 +1,4 @@
-package GUI;
+package Logica;
 
 import java.io.File;
 import java.io.IOException;
@@ -11,7 +11,7 @@ public class GestorImagenes {
      * Copia la imagen seleccionada por el usuario a la carpeta local del proyecto.
      * * @param archivoOrigen El archivo que el usuario selecciono con el JFileChooser.
      * @param cvePelicula La clave autogenerada de la pelicula (ej. "P001").
-     * @return La ruta relativa que se guardara en el objeto GUI.Pelicula.
+     * @return La ruta relativa que se guardara en el objeto Modelo.Pelicula.
      * @throws IOException Si ocurre un error al copiar el archivo.
      */
     public static String guardarImagenPelicula(File archivoOrigen, String cvePelicula) throws IOException {
@@ -25,7 +25,7 @@ public class GestorImagenes {
         // 5. Copiar el archivo reemplazandolo si ya existia uno con el mismo nombre
         Files.copy(archivoOrigen.toPath(), archivoDestino.toPath(), StandardCopyOption.REPLACE_EXISTING);
 
-        // 6. Retornar la ruta relativa exacta para guardarla en la instancia de GUI.Pelicula
+        // 6. Retornar la ruta relativa exacta para guardarla en la instancia de Modelo.Pelicula
         return "resources/imgMovies/" + nombreNuevoArchivo;
     }
 

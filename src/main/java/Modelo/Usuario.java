@@ -1,13 +1,16 @@
-package GUI;
+package Modelo;
+
+import Estructuras.Cola;
+import Estructuras.Pila;
 
 import java.util.LinkedList;
 
-class Usuario extends Entidad {
+public class Usuario extends Entidad {
 
     private int                  edad;
     private String               pais;
-    private Pila<Pelicula>       historialVistas;
-    private Cola<Pelicula>       watchlist;
+    private Pila<Pelicula> historialVistas;
+    private Cola<Pelicula> watchlist;
     private LinkedList<Pelicula> peliculasFavoritas;
 
     public Usuario(String cve, String nombre, int edad, String pais) {

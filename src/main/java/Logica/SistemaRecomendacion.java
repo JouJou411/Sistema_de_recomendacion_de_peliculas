@@ -1,4 +1,7 @@
-package GUI;
+package Logica;
+
+import Modelo.Pelicula;
+import Modelo.Usuario;
 
 import java.io.*;
 import java.util.ArrayList;

@@ -1,9 +1,9 @@
-package GUI;
+package Modelo;
 
 import java.io.Serializable;
 
 // Clase base abstracta para serializacion y control de claves
-abstract class Entidad implements Serializable {
+public abstract class Entidad implements Serializable {
     private static final long serialVersionUID = 1L;
     protected String cve;
     protected String nombre;

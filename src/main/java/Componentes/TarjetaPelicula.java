@@ -1,11 +1,11 @@
-package GUI;
+package Componentes;
 
 import javax.swing.*;
 import javax.swing.border.*;
 import java.awt.*;
 import java.io.File;
 
-import static GUI.VentanaPrincipal.*;
+import static Vistas.VentanaPrincipal.*;
 
 /**
  * TarjetaPelicula

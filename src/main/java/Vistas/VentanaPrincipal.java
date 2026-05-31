@@ -1,5 +1,6 @@
-package GUI;
+package Vistas;
 
+import Logica.SistemaRecomendacion;
 import com.formdev.flatlaf.FlatDarkLaf;
 import javax.swing.*;
 import javax.swing.border.*;
@@ -14,11 +15,11 @@ public class VentanaPrincipal extends JFrame {
     // ── Paleta ──────────────────────────────────────────────────────────────
     static final Color BG_DEEP    = new Color(10,  10,  15);
     static final Color BG_PANEL   = new Color(17,  17,  26);
-    static final Color BG_CARD    = new Color(24,  24,  36);
-    static final Color ACCENT     = new Color(232, 197, 104);
-    static final Color CYAN       = new Color( 78, 205, 196);
-    static final Color TEXT_PRI   = new Color(240, 237, 228);
-    static final Color TEXT_MUT   = new Color(107, 107, 122);
+    public static final Color BG_CARD    = new Color(24,  24,  36);
+    public static final Color ACCENT     = new Color(232, 197, 104);
+    public static final Color CYAN       = new Color( 78, 205, 196);
+    public static final Color TEXT_PRI   = new Color(240, 237, 228);
+    public static final Color TEXT_MUT   = new Color(107, 107, 122);
     static final Color BORDER_COL = new Color(255, 255, 255, 18);
 
     // ── Fuentes ─────────────────────────────────────────────────────────────

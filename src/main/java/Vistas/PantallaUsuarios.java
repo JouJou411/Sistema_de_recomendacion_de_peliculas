@@ -1,4 +1,8 @@
-package GUI;
+package Vistas;
+
+import Logica.SistemaRecomendacion;
+import Modelo.Pelicula;
+import Modelo.Usuario;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -17,8 +21,8 @@ import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.List;
 
-import static GUI.VentanaPrincipal.*;
-import static GUI.PantallaMotor.*;
+import static Vistas.VentanaPrincipal.*;
+import static Vistas.PantallaMotor.*;
 
 public class PantallaUsuarios extends JPanel {
 

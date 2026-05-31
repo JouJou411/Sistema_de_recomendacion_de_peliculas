@@ -1,4 +1,4 @@
-package GUI;
+package Modelo;
 
 public class Pelicula extends Entidad {
     private String genero;

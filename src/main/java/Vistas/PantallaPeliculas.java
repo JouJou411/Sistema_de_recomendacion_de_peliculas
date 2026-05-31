@@ -1,4 +1,9 @@
-package GUI;
+package Vistas;
+
+import Logica.GestorImagenes;
+import Logica.SistemaRecomendacion;
+import Modelo.Pelicula;
+import Modelo.Usuario;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -18,9 +23,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
-import static GUI.VentanaPrincipal.*;
-import static GUI.PantallaMotor.*;
-import static GUI.PantallaUsuarios.*;
+import static Vistas.VentanaPrincipal.*;
+import static Vistas.PantallaMotor.*;
+import static Vistas.PantallaUsuarios.*;
 
 /**
  * PantallaPeliculas — Catálogo completo de películas con CRUD.

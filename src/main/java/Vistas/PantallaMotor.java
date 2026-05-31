@@ -1,4 +1,11 @@
-package GUI;
+package Vistas;
+
+import Componentes.RoundedPanel;
+import Componentes.TarjetaPelicula;
+import Logica.MotorRecomendacion;
+import Logica.SistemaRecomendacion;
+import Modelo.Pelicula;
+import Modelo.Usuario;
 
 import javax.swing.*;
 import javax.swing.border.*;
@@ -6,7 +13,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.List;
 
-import static GUI.VentanaPrincipal.*;
+import static Vistas.VentanaPrincipal.*;
 
 /**
  * PantallaMotor — Pantalla del Motor de Recomendación (BFS).
