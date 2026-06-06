@@ -153,7 +153,9 @@ O directamente desde el IDE ejecutando `VentanaPrincipal.main()`.
 
 ## Integrantes
 
-<!-- Agrega aquí los nombres del equipo -->
+- PULIDO AMBRIZ JOAB JAAZIEL
+- DAVILA RUIZ ANGEL DANIEL
+- GOMEZ ZARAGOZA ANDREA
 
 ---
 
