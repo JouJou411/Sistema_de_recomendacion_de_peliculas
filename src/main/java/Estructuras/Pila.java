@@ -5,25 +5,23 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 
 /**
- * Pila<T> — Implementación propia de una pila (LIFO) con nodos enlazados.
+ * Pila<T>
  * Usa la clase independiente Nodo<T> del mismo paquete.
  *
  * Operaciones principales:
- *   push(T)   → inserta en el tope          O(1)
- *   pop()     → elimina y retorna el tope   O(1)
- *   peek()    → consulta el tope sin quitar O(1)
- *   isEmpty() → verifica si está vacía      O(1)
- *   size()    → número de elementos         O(1)
+ *   push(T)   → inserta en el tope
+ *   pop()     → elimina y retorna el tope
+ *   peek()    → consulta el tope sin quitar
+ *   isEmpty() → verifica si está vacía
+ *   size()    → número de elementos
  */
 public class Pila<T> implements Serializable, Iterable<T> {
 
     private static final long serialVersionUID = 1L;
 
-    // ── Estado ────────────────────────────────────────────────────────────
     private Nodo<T> tope;    // Apunta al nodo en el tope de la pila
     private int     tamanio;
 
-    // ── Constructor ───────────────────────────────────────────────────────
     public Pila() {
         tope    = null;
         tamanio = 0;

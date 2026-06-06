@@ -22,18 +22,30 @@ public class Usuario extends Entidad {
         this.peliculasFavoritas = new LinkedList<>();
     }
 
-    // ── Getters / Setters ──────────────────────────────────────────────────
 
-    public int getEdad() { return edad; }
-    public void setEdad(int edad) { this.edad = edad; }
+    public int getEdad() {
+        return edad;
+    }
 
-    public String getPais() { return pais; }
-    public void setPais(String pais) { this.pais = pais; }
+    public void setEdad(int edad) {
+        this.edad = edad;
+    }
+
+    public String getPais() {
+        return pais;
+    }
+
+    public void setPais(String pais) {
+        this.pais = pais;
+    }
 
     /**
      * Pila de historial de películas vistas
      */
-    public Pila<Pelicula> getHistorialVistas() { return historialVistas; }
+    public Pila<Pelicula> getHistorialVistas() {
+        return historialVistas;
+    }
+
     public void setHistorialVistas(Pila<Pelicula> historialVistas) {
         this.historialVistas = historialVistas;
     }
@@ -41,7 +53,9 @@ public class Usuario extends Entidad {
     /**
      * Cola de películas pendientes por ver
      */
-    public Cola<Pelicula> getWatchlist() { return watchlist; }
+    public Cola<Pelicula> getWatchlist() {
+        return watchlist;
+    }
     public void setWatchlist(Cola<Pelicula> watchlist) {
         this.watchlist = watchlist;
     }
@@ -50,7 +64,9 @@ public class Usuario extends Entidad {
      * Lista enlazada de películas favoritas.
      * Representa las aristas del usuario en el grafo de multilista.
      */
-    public LinkedList<Pelicula> getPeliculasFavoritas() { return peliculasFavoritas; }
+    public LinkedList<Pelicula> getPeliculasFavoritas() {
+        return peliculasFavoritas;
+    }
     public void setPeliculasFavoritas(LinkedList<Pelicula> peliculasFavoritas) {
         this.peliculasFavoritas = peliculasFavoritas;
     }

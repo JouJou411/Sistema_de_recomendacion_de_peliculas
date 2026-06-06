@@ -91,7 +91,7 @@ public class Cola<T> implements Serializable, Iterable<T> {
         return false;
     }
 
-    // ── Iterador (frente → final) ─────────────────────────────────────────
+    // ── Iterador  ─────────────────────────────────────────
     @Override
     public Iterator<T> iterator() {
         return new Iterator<T>() {

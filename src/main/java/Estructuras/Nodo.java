@@ -15,11 +15,8 @@ public class Nodo<T> implements Serializable {
 
     private static final long serialVersionUID = 1L;
 
-    // ── Campos ────────────────────────────────────────────────────────────
     T       dato;
     Nodo<T> siguiente;
-
-    // ── Constructores ─────────────────────────────────────────────────────
 
     /**
      * Crea un nodo con dato y referencia al siguiente.
@@ -44,15 +41,21 @@ public class Nodo<T> implements Serializable {
         this.siguiente = null;
     }
 
-    // ── Getters / Setters ─────────────────────────────────────────────────
+    public T getDato() {
+        return dato;
+    }
 
-    public T getDato()               { return dato; }
-    public void setDato(T dato)      { this.dato = dato; }
+    public void setDato(T dato) {
+        this.dato = dato;
+    }
 
-    public Nodo<T> getSiguiente()              { return siguiente; }
-    public void setSiguiente(Nodo<T> siguiente){ this.siguiente = siguiente; }
+    public Nodo<T> getSiguiente() {
+        return siguiente;
+    }
 
-    // ── Representación textual ────────────────────────────────────────────
+    public void setSiguiente(Nodo<T> siguiente) {
+        this.siguiente = siguiente;
+    }
 
     @Override
     public String toString() {
