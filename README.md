@@ -159,4 +159,4 @@ O directamente desde el IDE ejecutando `VentanaPrincipal.main()`.
 
 ## Materia
 
-Estructuras de Datos — Ingeniería en Sistemas
+Estructuras de Datos — Ingeniería en Software
