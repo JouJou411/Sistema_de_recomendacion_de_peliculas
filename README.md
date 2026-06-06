@@ -35,9 +35,7 @@ ProyectoEDD/
 │               ├── PantallaPeliculas.java
 │               ├── PantallaUsuarios.java
 │               └── VentanaPrincipal.java
-├── .gitignore
-├── pom.xml
-└── README.md
+└── 
 ```
 
 ---
